@@ -1,3 +1,4 @@
+# revisat 24/11/26
 
 import mysql.connector
 
@@ -27,7 +28,8 @@ class DB:
                 port=self.DB_PORT,
                 user=self.DB_USER,
                 password=self.DB_PASSWORD,
-                database=self.DB_NAME
+                database=self.DB_NAME,
+                autocommit=not self.transaccio
             )
 
         return self.conn
@@ -79,21 +81,15 @@ class DB:
         cursor = None
 
         try:
-            if not self.transaccio:
-                self.start_transaction()
-
             cursor = self.conn.cursor()
             cursor.execute(sql, params or ())
 
             files_afectades = cursor.rowcount
 
-            if not self.transaccio:
-                self.commit()
-
             return files_afectades
 
         except mysql.connector.Error:
-            if not self.transaccio:
+            if self.transaccio:
                 self.rollback()
             raise
 
